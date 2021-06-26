@@ -1,4 +1,4 @@
-package gov.ca.portfolio.rebalancer.dto;
+package com.finance.portfolio.rebalancer.dto;
 
 public class InvestmentCategoryDto extends AbstractDto {
 	private String name;

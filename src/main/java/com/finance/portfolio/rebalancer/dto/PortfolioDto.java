@@ -1,4 +1,6 @@
-package gov.ca.portfolio.rebalancer.dto;
+package com.finance.portfolio.rebalancer.dto;
+
+import com.finance.portfolio.rebalancer.controller.PortfolioRebalanceController;
 
 public class PortfolioDto extends AbstractDto {
 	private Integer riskPreference;
@@ -13,11 +15,11 @@ public class PortfolioDto extends AbstractDto {
 	public PortfolioDto(Integer riskPreference, Integer bondPercentage, Integer largePercentage, Integer midPercentage, Integer foreignPercentage, Integer smallPercentage) {
 		this.riskPreference = riskPreference;
 		
-		this.investCategoryDtos[0] = new InvestmentCategoryDto("BONDS", bondPercentage);
-		this.investCategoryDtos[1] = new InvestmentCategoryDto("LARGE_CAP", largePercentage);
-		this.investCategoryDtos[2] = new InvestmentCategoryDto("MID_CAP", midPercentage);
-		this.investCategoryDtos[3] = new InvestmentCategoryDto("FOREIGN_CAP", foreignPercentage);
-		this.investCategoryDtos[4] = new InvestmentCategoryDto("SMALL_CAP", smallPercentage);
+		this.investCategoryDtos[0] = new InvestmentCategoryDto(PortfolioRebalanceController.CATEGORY_BONDS, bondPercentage);
+		this.investCategoryDtos[1] = new InvestmentCategoryDto(PortfolioRebalanceController.CATEGORY_LARGE_CAP, largePercentage);
+		this.investCategoryDtos[2] = new InvestmentCategoryDto(PortfolioRebalanceController.CATEGORY_MID_CAP, midPercentage);
+		this.investCategoryDtos[3] = new InvestmentCategoryDto(PortfolioRebalanceController.CATEGORY_FOREIGN_CAP, foreignPercentage);
+		this.investCategoryDtos[4] = new InvestmentCategoryDto(PortfolioRebalanceController.CATEGORY_SMALL_CAP, smallPercentage);
 	}
 	
 	public Integer getRiskPreference() {

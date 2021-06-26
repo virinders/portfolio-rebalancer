@@ -1,4 +1,4 @@
-package gov.ca.portfolio.rebalancer.dto;
+package com.finance.portfolio.rebalancer.dto;
 
 import java.util.HashMap;
 import java.util.Map;

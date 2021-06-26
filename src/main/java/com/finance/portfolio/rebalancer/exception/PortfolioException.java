@@ -1,4 +1,4 @@
-package gov.ca.portfolio.rebalancer.exception;
+package com.finance.portfolio.rebalancer.exception;
 
 import java.security.SecureRandom;
 

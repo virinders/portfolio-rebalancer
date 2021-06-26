@@ -1,4 +1,4 @@
-package gov.ca.portfolio.rebalancer;
+package com.finance.portfolio.rebalancer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

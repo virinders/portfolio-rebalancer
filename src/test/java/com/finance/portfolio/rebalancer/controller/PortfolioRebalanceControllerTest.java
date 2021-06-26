@@ -1,4 +1,4 @@
-package gov.ca.portfolio.rebalancer.controller;
+package com.finance.portfolio.rebalancer.controller;
 
 import java.util.List;
 
@@ -18,9 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import gov.ca.portfolio.rebalancer.controller.PortfolioRebalanceController;
-import gov.ca.portfolio.rebalancer.dto.PortfolioDto;
-import gov.ca.portfolio.rebalancer.dto.TransferenceDto;
+import com.finance.portfolio.rebalancer.dto.AmountDto;
+import com.finance.portfolio.rebalancer.dto.PortfolioDto;
+import com.finance.portfolio.rebalancer.dto.TransferenceDto;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -44,7 +44,7 @@ public class PortfolioRebalanceControllerTest {
 	public void testGetRecommendedPortfolioPercentsByRiskPreference() {
 		
 		Integer riskPreference = 4;
-		ResponseEntity<PortfolioDto> portfolioDto = this.restTemplate.exchange("/recommendedPortfolioPercentsByRiskPreference/" + riskPreference, HttpMethod.GET,
+		ResponseEntity<PortfolioDto> portfolioDto = this.restTemplate.exchange("/portfolio/" + riskPreference, HttpMethod.GET,
 				new HttpEntity<>(headers), PortfolioDto.class);
 		
 		Assert.assertEquals(HttpStatus.OK, portfolioDto.getStatusCode());
@@ -62,7 +62,7 @@ public class PortfolioRebalanceControllerTest {
 	public void testGetRecommendedPortfolioPercentsByRiskPreferenceInvalid() {
 		
 		Integer riskPreference = 40;
-		ResponseEntity<PortfolioDto> portfolioDto = this.restTemplate.exchange("/recommendedPortfolioPercentsByRiskPreference/" + riskPreference, HttpMethod.GET,
+		ResponseEntity<PortfolioDto> portfolioDto = this.restTemplate.exchange("/portfolio/" + riskPreference, HttpMethod.GET,
 				new HttpEntity<>(headers), PortfolioDto.class);
 		
 		Assert.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, portfolioDto.getStatusCode());
@@ -78,12 +78,17 @@ public class PortfolioRebalanceControllerTest {
 	public void testRebalancePortfolio() {
 
 		Integer riskPreference = 4;
-		Double[] currentAmounts = {100.0,100.0,100.0,100.0,100.0};
+		AmountDto[] currentAmounts = new AmountDto[5];
+		currentAmounts[0] = new AmountDto(PortfolioRebalanceController.CATEGORY_BONDS, 100.0);
+		currentAmounts[1] = new AmountDto(PortfolioRebalanceController.CATEGORY_LARGE_CAP, 100.0);
+		currentAmounts[2] = new AmountDto(PortfolioRebalanceController.CATEGORY_MID_CAP, 100.0);
+		currentAmounts[3] = new AmountDto(PortfolioRebalanceController.CATEGORY_FOREIGN_CAP, 100.0);
+		currentAmounts[4] = new AmountDto(PortfolioRebalanceController.CATEGORY_SMALL_CAP, 100.0);
 
 		ParameterizedTypeReference<List<TransferenceDto>> typeRef = new ParameterizedTypeReference<List<TransferenceDto>>() {
 		};
 
-		ResponseEntity<List<TransferenceDto>> retVal = this.restTemplate.exchange("/rebalancePortfolio/" + riskPreference,
+		ResponseEntity<List<TransferenceDto>> retVal = this.restTemplate.exchange("/portfolio/rebalance/" + riskPreference,
 				HttpMethod.POST, new HttpEntity<>(currentAmounts, headers), typeRef);
 
 		Assert.assertEquals(HttpStatus.OK, retVal.getStatusCode());

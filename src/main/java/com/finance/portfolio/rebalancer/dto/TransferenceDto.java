@@ -1,4 +1,4 @@
-package gov.ca.portfolio.rebalancer.dto;
+package com.finance.portfolio.rebalancer.dto;
 
 public class TransferenceDto extends AbstractDto {
 	private String recommededTransfer; // capture the full transference message

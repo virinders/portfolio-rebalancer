@@ -1,4 +1,4 @@
-package gov.ca.portfolio.rebalancer.exception;
+package com.finance.portfolio.rebalancer.exception;
 
 /**
  * The Exception to indicate that the provided input is not valid.

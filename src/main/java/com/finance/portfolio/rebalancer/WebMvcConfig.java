@@ -1,4 +1,4 @@
-package gov.ca.portfolio.rebalancer;
+package com.finance.portfolio.rebalancer;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;

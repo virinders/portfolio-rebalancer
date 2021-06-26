@@ -1,4 +1,4 @@
-package gov.ca.portfolio.rebalancer.controller;
+package com.finance.portfolio.rebalancer.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,10 +20,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import gov.ca.portfolio.rebalancer.dto.InvestmentCategoryDto;
-import gov.ca.portfolio.rebalancer.dto.PortfolioDto;
-import gov.ca.portfolio.rebalancer.dto.TransferenceDto;
-import gov.ca.portfolio.rebalancer.exception.PortfolioInvalidInputException;
+import com.finance.portfolio.rebalancer.dto.AmountDto;
+import com.finance.portfolio.rebalancer.dto.InvestmentCategoryDto;
+import com.finance.portfolio.rebalancer.dto.PortfolioDto;
+import com.finance.portfolio.rebalancer.dto.TransferenceDto;
+import com.finance.portfolio.rebalancer.exception.PortfolioInvalidInputException;
 
 /**
  * This is Portfolio Rebalance Controller.
@@ -34,8 +35,16 @@ import gov.ca.portfolio.rebalancer.exception.PortfolioInvalidInputException;
 public class PortfolioRebalanceController {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	// We are assuming there are 5 investment categories as follows
+	public static final String CATEGORY_BONDS = "BONDS";
+	public static final String CATEGORY_LARGE_CAP = "LARGE_CAP";
+	public static final String CATEGORY_MID_CAP = "MID_CAP";
+	public static final String CATEGORY_FOREIGN_CAP = "FOREIGN_CAP";
+	public static final String CATEGORY_SMALL_CAP = "SMALL_CAP";
+	
 	/**
 	 * Map from riskPreference to PortfolioDto.
+	 * Assume the following recommended investment category percentages for each risk preference between 1-10
 	 */
 	public static final Map<Integer, PortfolioDto> RISK_PREF_TO_PORTFOLIO = new HashMap<>();
 	static {
@@ -56,7 +65,7 @@ public class PortfolioRebalanceController {
 		return "Welcome message from Portfolio Rebalancer Spring Boot App";
 	}
 	
-	@GetMapping(path = "/recommendedPortfolioPercentsByRiskPreference/{riskPreference}", produces = "application/json")
+	@GetMapping(path = "/portfolio/{riskPreference}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public PortfolioDto getRecommendedPortfolioPercentsByRiskPreference(@PathVariable Integer riskPreference) {
 		logger.info("Received riskPreference: " + riskPreference);
 		PortfolioDto portfolioDto = RISK_PREF_TO_PORTFOLIO.get(riskPreference);
@@ -66,8 +75,8 @@ public class PortfolioRebalanceController {
 		return portfolioDto;
 	}
 	
-	@PostMapping(path = "/rebalancePortfolio/{riskPreference}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public List<TransferenceDto> rebalancePortfolio(@RequestBody Double[] currentAmounts, @PathVariable Integer riskPreference) {
+	@PostMapping(path = "/portfolio/rebalance/{riskPreference}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public List<TransferenceDto> rebalancePortfolio(@RequestBody AmountDto[] currentAmountDtos, @PathVariable Integer riskPreference) {
 		logger.info("Received riskPreference: " + riskPreference);
 		PortfolioDto portfolioDto = RISK_PREF_TO_PORTFOLIO.get(riskPreference);
 		if (portfolioDto == null) {
@@ -75,10 +84,20 @@ public class PortfolioRebalanceController {
 		}
 		InvestmentCategoryDto[] investCategoryDtos = portfolioDto.getInvestCategoryDtos();
 		
-		logger.info("Received currentAmounts array: " + Arrays.toString(currentAmounts));
-		if (currentAmounts.length != 5) {
-			throw new PortfolioInvalidInputException("Invalid input array length: " + currentAmounts.length, "currentAmountsLength");
+		logger.info("Received currentAmounts array: " + Arrays.toString(currentAmountDtos));
+		if (currentAmountDtos.length != 5) {
+			throw new PortfolioInvalidInputException("Invalid input array length: " + currentAmountDtos.length, "currentAmountsLength");
 		}
+		// Need to copy currentAmountDtos to the currentAmounts in the following order: 
+		// 0 -> BONDS, 1 -> LARGE_CAP, 2 -> MID_CAP, 3 -> FOREIGN_CAP, 4 -> SMALL_CAP
+		// this will ensure the input amounts can be provided in any order, we always use them internally in above order
+		Double[] currentAmounts = new Double[currentAmountDtos.length];
+		currentAmounts[0] = this.getAmountByCategory(currentAmountDtos, PortfolioRebalanceController.CATEGORY_BONDS);
+		currentAmounts[1] = this.getAmountByCategory(currentAmountDtos, PortfolioRebalanceController.CATEGORY_LARGE_CAP);
+		currentAmounts[2] = this.getAmountByCategory(currentAmountDtos, PortfolioRebalanceController.CATEGORY_MID_CAP);
+		currentAmounts[3] = this.getAmountByCategory(currentAmountDtos, PortfolioRebalanceController.CATEGORY_FOREIGN_CAP);
+		currentAmounts[4] = this.getAmountByCategory(currentAmountDtos, PortfolioRebalanceController.CATEGORY_SMALL_CAP);
+		
 		Double[] desiredAmounts = new Double[currentAmounts.length];
 		Double[] sellAmounts = new Double[currentAmounts.length];
 		Double[] buyAmounts = new Double[currentAmounts.length];
@@ -109,6 +128,16 @@ public class PortfolioRebalanceController {
 			logger.info("Transference: " + transferenceDto.getRecommededTransfer());
 		}
 		return transferenceDtos;
+	}
+	
+	// Find the matching amount by input category name in the given array
+	private Double getAmountByCategory(AmountDto[] amountDtos, String category) {
+		for (AmountDto amountDto : amountDtos) {
+			if (amountDto != null && amountDto.getCategory() != null && amountDto.getCategory().equalsIgnoreCase(category)) {
+				return amountDto.getAmount();
+			}
+		}
+		throw new PortfolioInvalidInputException("Invalid input for AmountDtos. Cannot find category: " + category, "categoryName");
 	}
 	
 	// This method handles the case where the sell amounts of investments matches the buy amounts of other investments entirely.
